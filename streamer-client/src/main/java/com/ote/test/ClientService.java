@@ -40,16 +40,17 @@ public class ClientService {
 
     private class Batch implements AutoCloseable {
 
-        private final Logger logger = LoggerFactory.getLogger(this.getClass());
+        protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-        private final UUID correlationId = UUID.randomUUID();
-        private int numberOfPage;
+        protected final UUID correlationId = UUID.randomUUID();
+        protected int numberOfPage;
 
         public Batch(int pageSize) {
             long start = System.currentTimeMillis();
             try {
                 numberOfPage = remoteEntityService.startGetAll(correlationId, pageSize);
             } finally {
+                logger.info("start : the result has been split into " + numberOfPage + " pages");
                 logger.info("start : Elapsed time: " + (System.currentTimeMillis() - start) + "ms");
             }
         }
@@ -59,7 +60,43 @@ public class ClientService {
             try {
                 return IntStream.range(0, numberOfPage).
                         parallel().
-                        mapToObj(this::getAll).
+                        mapToObj(pageIndex -> remoteEntityService.getAll(correlationId, pageIndex)).
+                        flatMap(Stream::of).
+                        collect(Collectors.toList());
+            } finally {
+                logger.info("getAll : Elapsed time: " + (System.currentTimeMillis() - start) + "ms");
+            }
+        }
+
+        @Override
+        public void close() throws Exception {
+            remoteEntityService.finishGetAll(correlationId);
+        }
+    }
+
+    /*
+    @Traceable
+    public List<Entity> getAllAsync(int pageSize) throws Exception {
+
+        try (Batch batch = new BatchAsync(pageSize)) {
+            return batch.getAll();
+        }
+    }
+
+    private class BatchAsync extends Batch {
+
+        public BatchAsync(int pageSize) {
+            super(pageSize);
+        }
+
+        @Override
+        public List<Entity> getAll() {
+            long start = System.currentTimeMillis();
+            try {
+                return IntStream.range(0, numberOfPage).
+                        parallel().
+                        mapToObj(this::getAllAsync).
+                        parallel().
                         flatMap(this::get).
                         collect(Collectors.toList());
             } finally {
@@ -67,8 +104,7 @@ public class ClientService {
             }
         }
 
-        @Async
-        private Future<Entity[]> getAll(int pageIndex) {
+        private Future<Entity[]> getAllAsync(int pageIndex) {
             try {
                 return remoteEntityService.getAllAsync(correlationId, pageIndex);
             } catch (Exception e) {
@@ -78,19 +114,10 @@ public class ClientService {
 
         private Stream<Entity> get(Future<Entity[]> future) {
             try {
-                Entity[] entities = future.get();
-                //logger.info("Number of elements : " + entities.length);
-                return Stream.of(entities);
+                return Stream.of(future.get());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
-
-
-        @Override
-        public void close() throws Exception {
-            remoteEntityService.finishGetAll(correlationId);
-        }
-    }
-
+    }*/
 }

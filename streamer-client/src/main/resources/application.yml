@@ -4,4 +4,4 @@ server:
 logging:
   level:
     org.springframework.web: WARN
-    com.ote.test: TRACE
+    com.ote.test: INFO

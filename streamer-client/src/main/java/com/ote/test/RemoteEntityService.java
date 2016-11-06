@@ -43,13 +43,14 @@ public class RemoteEntityService {
         return restTemplate.postForObject(url, null, Integer.class);
     }
 
+    /*
     @Async
     public Future<Entity[]> getAllAsync(UUID correlationId, int pageNumber) throws InterruptedException {
         return new AsyncResult<>(getAll(correlationId, pageNumber));
-    }
+    }*/
 
     @Traceable
-    private Entity[] getAll(UUID correlationId, int pageNumber) {
+    public Entity[] getAll(UUID correlationId, int pageNumber) {
 
         Map<String, String> vars = new HashMap<>();
         vars.put("correlationId", correlationId.toString());

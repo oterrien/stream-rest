@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 @RestController
 public class ClientController {
@@ -28,17 +30,12 @@ public class ClientController {
 
         long start = System.currentTimeMillis();
 
-        CompletableFuture.
-                supplyAsync(() -> clientService.getOneAsync(id)).
-                thenAccept(entityFuture -> {
-                    try {
-                        logger.info("--> " + entityFuture.get());
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    } finally {
-                        logger.info("Elapsed time: " + (System.currentTimeMillis() - start));
-                    }
-                });
+        Future<Entity> entity = clientService.getOneAsync(id);
+
+        logger.info("Do something in the meantime...");
+
+        logger.info("--> " + entity.get());
+        logger.info("Elapsed time: " + (System.currentTimeMillis() - start));
     }
 
     /**
@@ -90,11 +87,28 @@ public class ClientController {
                 getAll(pageSize).
                 stream().
                 peek(entity -> count.incrementAndGet()).
-                count();
-                //forEach(entity -> logger.trace("--> " + entity));
+                forEach(entity -> logger.trace("--> " + entity));
 
         logger.info("Number of processed element : " + count.get());
     }
 
+    /**
+     * example http://localhost:8081/async?pageSize=50
+     *
+     * @param pageSize
+     * @throws Exception
+     */
+    /*@Traceable
+    @RequestMapping(method = RequestMethod.POST, value = "/async")
+    public void processAllAsync(@RequestParam(value = "pageSize", required = true) int pageSize) throws Exception {
 
+        AtomicInteger count = new AtomicInteger(0);
+        clientService.
+                getAllAsync(pageSize).
+                stream().
+                peek(entity -> count.incrementAndGet()).
+                forEach(entity -> logger.trace("--> " + entity));
+
+        logger.info("Number of processed element : " + count.get());
+    }*/
 }
