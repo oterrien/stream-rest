@@ -30,11 +30,15 @@ public class ClientService {
         }
     }
 
-    public Batch createProcessorByBatch(int pageSize) {
-        return new Batch(pageSize);
+    @Traceable
+    public List<Entity> getAll(int pageSize) throws Exception {
+
+        try (Batch batch = new Batch(pageSize)) {
+            return batch.getAll();
+        }
     }
 
-    public class Batch implements AutoCloseable {
+    private class Batch implements AutoCloseable {
 
         private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -42,20 +46,24 @@ public class ClientService {
         private int numberOfPage;
 
         public Batch(int pageSize) {
-            numberOfPage = remoteEntityService.startGetAll(correlationId, pageSize);
+            long start = System.currentTimeMillis();
+            try {
+                numberOfPage = remoteEntityService.startGetAll(correlationId, pageSize);
+            } finally {
+                logger.info("start : Elapsed time: " + (System.currentTimeMillis() - start) + "ms");
+            }
         }
 
         public List<Entity> getAll() {
             long start = System.currentTimeMillis();
             try {
                 return IntStream.range(0, numberOfPage).
-                        mapToObj(this::getAll).
                         parallel().
+                        mapToObj(this::getAll).
                         flatMap(this::get).
-                        peek(entity -> logger.trace(entity.toString())).
                         collect(Collectors.toList());
             } finally {
-                logger.info("Elapsed time: " + (System.currentTimeMillis() - start));
+                logger.info("getAll : Elapsed time: " + (System.currentTimeMillis() - start) + "ms");
             }
         }
 
@@ -70,7 +78,9 @@ public class ClientService {
 
         private Stream<Entity> get(Future<Entity[]> future) {
             try {
-                return Stream.of(future.get());
+                Entity[] entities = future.get();
+                //logger.info("Number of elements : " + entities.length);
+                return Stream.of(entities);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

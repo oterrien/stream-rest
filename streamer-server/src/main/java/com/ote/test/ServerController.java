@@ -86,7 +86,7 @@ public class ServerController {
 
     private List<Entity> getAll() {
 
-        return IntStream.range(0, 100000).
+        return IntStream.range(0, 1000000).
                 mapToObj(i -> new Entity(i, "name_" + i, "decr_" + i)).
                 collect(Collectors.toList());
     }

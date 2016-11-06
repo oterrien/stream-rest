@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @RestController
 public class ClientController {
@@ -84,10 +85,15 @@ public class ClientController {
     @RequestMapping(method = RequestMethod.POST)
     public void processAll(@RequestParam(value = "pageSize", required = true) int pageSize) throws Exception {
 
-        try (ClientService.Batch batch = clientService.createProcessorByBatch(pageSize)) {
+        AtomicInteger count = new AtomicInteger(0);
+        clientService.
+                getAll(pageSize).
+                stream().
+                peek(entity -> count.incrementAndGet()).
+                count();
+                //forEach(entity -> logger.trace("--> " + entity));
 
-            batch.getAll();//.stream().forEach(entity -> logger.info("--> " + entity));
-        }
+        logger.info("Number of processed element : " + count.get());
     }
 
 

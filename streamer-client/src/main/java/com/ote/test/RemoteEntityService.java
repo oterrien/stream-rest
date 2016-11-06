@@ -30,6 +30,7 @@ public class RemoteEntityService {
     //endregion
 
     //region GET ALL
+    @Traceable
     public int startGetAll(UUID correlationId, int pageSize) {
 
         Map<String, String> vars = new HashMap<>();
@@ -47,6 +48,7 @@ public class RemoteEntityService {
         return new AsyncResult<>(getAll(correlationId, pageNumber));
     }
 
+    @Traceable
     private Entity[] getAll(UUID correlationId, int pageNumber) {
 
         Map<String, String> vars = new HashMap<>();
@@ -59,6 +61,7 @@ public class RemoteEntityService {
         return restTemplate.getForObject(url, Entity[].class);
     }
 
+    @Traceable
     public void finishGetAll(UUID correlationId) {
 
         Map<String, String> vars = new HashMap<>();
