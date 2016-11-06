@@ -28,14 +28,23 @@ public class ClientController {
     @RequestMapping(method = RequestMethod.POST, value = "/{id}")
     public void processOne(@PathVariable int id) throws Exception {
 
+        // Asynchronously -> able to do something by waiting for server to answer
         long start = System.currentTimeMillis();
-
         Future<Entity> entity = clientService.getOneAsync(id);
-
-        logger.info("Do something in the meantime...");
-
+        while (!entity.isDone()){
+            logger.info("Able to do something in the meantime...");
+            Thread.sleep(100);
+        }
         logger.info("--> " + entity.get());
         logger.info("Elapsed time: " + (System.currentTimeMillis() - start));
+
+        // Synchronously -> waiting for server to answer
+        start = System.currentTimeMillis();
+        Entity entity2 = clientService.getOne(id);
+        logger.info("--> " + entity2);
+        logger.info("Elapsed time: " + (System.currentTimeMillis() - start));
+
+
     }
 
     /**
@@ -91,24 +100,4 @@ public class ClientController {
 
         logger.info("Number of processed element : " + count.get());
     }
-
-    /**
-     * example http://localhost:8081/async?pageSize=50
-     *
-     * @param pageSize
-     * @throws Exception
-     */
-    /*@Traceable
-    @RequestMapping(method = RequestMethod.POST, value = "/async")
-    public void processAllAsync(@RequestParam(value = "pageSize", required = true) int pageSize) throws Exception {
-
-        AtomicInteger count = new AtomicInteger(0);
-        clientService.
-                getAllAsync(pageSize).
-                stream().
-                peek(entity -> count.incrementAndGet()).
-                forEach(entity -> logger.trace("--> " + entity));
-
-        logger.info("Number of processed element : " + count.get());
-    }*/
 }

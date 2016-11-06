@@ -24,7 +24,7 @@ public class RemoteEntityService {
         return new AsyncResult<>(getOne(id));
     }
 
-    private Entity getOne(long id) {
+    public Entity getOne(long id) {
         return restTemplate.getForObject(URL + "/" + id, Entity.class);
     }
     //endregion
@@ -42,12 +42,6 @@ public class RemoteEntityService {
 
         return restTemplate.postForObject(url, null, Integer.class);
     }
-
-    /*
-    @Async
-    public Future<Entity[]> getAllAsync(UUID correlationId, int pageNumber) throws InterruptedException {
-        return new AsyncResult<>(getAll(correlationId, pageNumber));
-    }*/
 
     @Traceable
     public Entity[] getAll(UUID correlationId, int pageNumber) {

@@ -31,6 +31,11 @@ public class ClientService {
     }
 
     @Traceable
+    public Entity getOne(int id) {
+        return remoteEntityService.getOne(id);
+    }
+
+    @Traceable
     public List<Entity> getAll(int pageSize) throws Exception {
 
         try (Batch batch = new Batch(pageSize)) {
@@ -73,51 +78,4 @@ public class ClientService {
             remoteEntityService.finishGetAll(correlationId);
         }
     }
-
-    /*
-    @Traceable
-    public List<Entity> getAllAsync(int pageSize) throws Exception {
-
-        try (Batch batch = new BatchAsync(pageSize)) {
-            return batch.getAll();
-        }
-    }
-
-    private class BatchAsync extends Batch {
-
-        public BatchAsync(int pageSize) {
-            super(pageSize);
-        }
-
-        @Override
-        public List<Entity> getAll() {
-            long start = System.currentTimeMillis();
-            try {
-                return IntStream.range(0, numberOfPage).
-                        parallel().
-                        mapToObj(this::getAllAsync).
-                        parallel().
-                        flatMap(this::get).
-                        collect(Collectors.toList());
-            } finally {
-                logger.info("getAll : Elapsed time: " + (System.currentTimeMillis() - start) + "ms");
-            }
-        }
-
-        private Future<Entity[]> getAllAsync(int pageIndex) {
-            try {
-                return remoteEntityService.getAllAsync(correlationId, pageIndex);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        private Stream<Entity> get(Future<Entity[]> future) {
-            try {
-                return Stream.of(future.get());
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }*/
 }
