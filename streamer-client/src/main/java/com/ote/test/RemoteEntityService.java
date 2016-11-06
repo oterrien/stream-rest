@@ -14,7 +14,7 @@ import java.util.concurrent.Future;
 @Service
 public class RemoteEntityService {
 
-    private static final String URL = "http://localhost:8080/entities";
+    private static final String URL = "http://localhost:8082/entities";
 
     private final RestTemplate restTemplate = new RestTemplate();
 

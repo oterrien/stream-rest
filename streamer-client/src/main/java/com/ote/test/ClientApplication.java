@@ -7,7 +7,6 @@ import org.springframework.scheduling.annotation.AsyncConfigurerSupport;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 @SpringBootApplication
-@EnableAspectJAutoProxy(proxyTargetClass = true)
 @EnableAsync
 public class ClientApplication extends AsyncConfigurerSupport {
 
